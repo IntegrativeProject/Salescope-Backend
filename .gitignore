@@ -1,0 +1,54 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# === Entorno virtual ===
+venv/
+ENV/
+env/
+
+# === Configuración de entorno ===
+.env
+.env.local
+*.env
+
+# === Base de datos local (por si usas SQLite temporalmente) ===
+*.db
+*.sqlite3
+
+# === Alembic ===
+alembic/versions/*.pyc
+
+# === VSCode ===
+.vscode/
+.settings/
+
+# === Sistema operativo ===
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.cache/
+
+# === Pytest / Testing ===
+.coverage
+htmlcov/
+pytest_cache/
+.tox/
+
+# === Logs ===
+logs/
+*.log
