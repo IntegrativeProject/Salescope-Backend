@@ -1,10 +1,12 @@
 from logging.config import fileConfig
-import os
-from urllib.parse import quote
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from dotenv import load_dotenv
-from app.database import DatabaseConnection
+import os
+
+from app.database import Base  
+import app.models 
+from urllib.parse import quote
 
 # Load .env for local development (safe if file doesn't exist)
 load_dotenv()
@@ -31,7 +33,7 @@ config.set_main_option("sqlalchemy.url", db_url)
 
 # Import metadata for autogenerate (optional)
 try:
-    target_metadata = getattr(DatabaseConnection, "metadata", None)
+    target_metadata = Base.metadata
     if target_metadata is None:
         print("Alembic: Base found but has no metadata; proceeding without autogenerate metadata.")
 except Exception as _e:
