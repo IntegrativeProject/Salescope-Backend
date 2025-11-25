@@ -108,12 +108,49 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-##  API Endpoints (basic)
+## API Endpoints
 
-- `POST /products` – add a product  
-- `POST /sales` – register a sale  
-- `GET /reports/daily` – see daily sales  
-- `GET /reports/prediction` – demand prediction  
+### Base
+- **GET** `/` → health check. Returns `{ "message": "SaleScope API running" }`.
+
+### Users
+Backed by `backend/app/models/users.py` and exposed in `backend/app/routers/users.py`.
+
+- **POST** `/users/` → create user
+  - Body:
+  ```json
+  {
+    "full_name": "Alice Doe",
+    "email": "alice@example.com",
+    "role_id": 1,
+    "password_hash": "<hash>",
+    "is_active": true
+  }
+  ```
+  - Responses: `201 Created`, `409 Conflict` (email exists)
+
+- **GET** `/users/{user_id}` → get by id
+  - Responses: `200 OK`, `404 Not Found`
+
+- **GET** `/users/?skip=0&limit=50` → list users
+  - Query: `skip` (default 0), `limit` (default 50)
+  - Response: `200 OK` array
+
+- **PUT** `/users/{user_id}` → update user
+  - Body (partial allowed):
+  ```json
+  {
+    "full_name": "Alice Updated",
+    "email": "alice.updated@example.com",
+    "role_id": 2,
+    "password_hash": "<new-hash>",
+    "is_active": false
+  }
+  ```
+  - Responses: `200 OK`, `404 Not Found`
+
+- **DELETE** `/users/{user_id}` → delete user
+  - Responses: `204 No Content`, `404 Not Found`
 
 ---
 

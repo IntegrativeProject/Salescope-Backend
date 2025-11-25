@@ -29,7 +29,9 @@ if not db_url:
     db_url = f"postgresql+psycopg2://{quote(user)}:{quote(pwd)}@{host}:{port}/{name}"
 
 # Override sqlalchemy.url for both offline and online modes
-config.set_main_option("sqlalchemy.url", db_url)
+# Escape percent signs for ConfigParser interpolation safety
+safe_db_url = db_url.replace("%", "%%")
+config.set_main_option("sqlalchemy.url", safe_db_url)
 
 # Import metadata for autogenerate (optional)
 try:
