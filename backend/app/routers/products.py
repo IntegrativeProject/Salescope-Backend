@@ -16,6 +16,7 @@ from ..services.products import (
     list_products,
     update_product,
     delete_product,
+    restore_product,
 )
 
 
@@ -57,3 +58,10 @@ def delete_product_endpoint(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Product deleted successfully"}
 
+
+@router.put("/{product_id}/restore", response_model=ProductResponse)
+def restore_product_endpoint(product_id: int, db: Session = Depends(get_db)):
+    product = restore_product(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Product restored successfully", "data": product}

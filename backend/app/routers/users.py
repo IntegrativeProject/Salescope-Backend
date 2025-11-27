@@ -18,6 +18,7 @@ from ..services.users import (
     list_users,
     update_user,
     delete_user,
+    restore_user,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -66,3 +67,11 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     if not ok:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
+
+
+@router.put("/{user_id}/restore", response_model=UserResponse)
+def restore_user_endpoint(user_id: int, db: Session = Depends(get_db)):
+    user = restore_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User restored successfully", "data": user}

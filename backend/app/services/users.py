@@ -98,3 +98,17 @@ def delete_user(db: Session, user_id: int) -> bool:
     db.commit()
     db.refresh(user)
     return True
+
+
+def restore_user(db: Session, user_id: int) -> Optional[User]:
+    # Query without soft-delete filters to allow restoring
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        return None
+    user.is_active = True
+    user.deleted_at = None
+    user.deleted_by = None
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user

@@ -1,5 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from ..models.products import Product
 from ..schemas.products import ProductCreate, ProductUpdate
@@ -62,7 +63,23 @@ def delete_product(db: Session, product_id: int) -> bool:
     if not product:
         return False
     product.is_active = False
+    product.deleted_at = func.now()
+    # product.deleted_by can be set from auth context later
     db.add(product)
     db.commit()
     db.refresh(product)
     return True
+
+
+def restore_product(db: Session, product_id: int) -> Optional[Product]:
+    # Query without soft-delete filters to allow restoring
+    product = db.query(Product).filter(Product.product_id == product_id).first()
+    if not product:
+        return None
+    product.is_active = True
+    product.deleted_at = None
+    product.deleted_by = None
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    return product
