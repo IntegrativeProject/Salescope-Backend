@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from ..models.users import User
 from ..models.roles import Role
@@ -28,15 +29,37 @@ def create_user(db: Session, data: UserCreate) -> Optional[User]:
 
 
 def get_user(db: Session, user_id: int) -> Optional[User]:
-    return db.query(User).filter(User.user_id == user_id).first()
+    return (
+        db.query(User)
+        .filter(
+            User.user_id == user_id,
+            User.is_active == True,
+            User.deleted_at.is_(None),
+        )
+        .first()
+    )
 
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
-    return db.query(User).filter(User.email == email).first()
+    return (
+        db.query(User)
+        .filter(
+            User.email == email,
+            User.is_active == True,
+            User.deleted_at.is_(None),
+        )
+        .first()
+    )
 
 
 def list_users(db: Session, skip: int = 0, limit: int = 50) -> List[User]:
-    return db.query(User).offset(skip).limit(limit).all()
+    return (
+        db.query(User)
+        .filter(User.is_active == True, User.deleted_at.is_(None))
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def update_user(db: Session, user_id: int, data: UserUpdate) -> Optional[User]:
@@ -68,6 +91,10 @@ def delete_user(db: Session, user_id: int) -> bool:
     user = get_user(db, user_id)
     if not user:
         return False
-    db.delete(user)
+    user.is_active = False
+    user.deleted_at = func.now()
+    # deleted_by can be set later from auth context
+    db.add(user)
     db.commit()
+    db.refresh(user)
     return True

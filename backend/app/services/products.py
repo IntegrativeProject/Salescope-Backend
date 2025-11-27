@@ -11,6 +11,7 @@ def create_product(db: Session, data: ProductCreate) -> Product:
         description=data.description,
         price=data.price,
         stock=data.stock,
+        is_active=True
     )
     db.add(product)
     db.commit()
@@ -19,11 +20,21 @@ def create_product(db: Session, data: ProductCreate) -> Product:
 
 
 def get_product(db: Session, product_id: int) -> Optional[Product]:
-    return db.query(Product).filter(Product.product_id == product_id).first()
+    return (
+        db.query(Product)
+        .filter(Product.product_id == product_id, Product.is_active == True)
+        .first()
+    )
 
 
 def list_products(db: Session, skip: int = 0, limit: int = 50) -> List[Product]:
-    return db.query(Product).offset(skip).limit(limit).all()
+    return (
+        db.query(Product)
+        .filter(Product.is_active == True)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def update_product(db: Session, product_id: int, data: ProductUpdate) -> Optional[Product]:
@@ -50,6 +61,8 @@ def delete_product(db: Session, product_id: int) -> bool:
     product = get_product(db, product_id)
     if not product:
         return False
-    db.delete(product)
+    product.is_active = False
+    db.add(product)
     db.commit()
+    db.refresh(product)
     return True

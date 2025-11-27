@@ -15,5 +15,7 @@ class User(Base):
 
     created_at = Column(TIMESTAMP, server_default=text("NOW()"))
     updated_at = Column(TIMESTAMP, server_default=text("NOW()"))
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    deleted_by = Column(Integer, ForeignKey("users.user_id"), nullable=True)
 
     role = relationship("Role")
