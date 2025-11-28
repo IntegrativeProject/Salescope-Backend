@@ -12,5 +12,5 @@ class OrderItem(Base):
     quantity = Column(Integer, nullable=False)
     total_price = Column(Numeric(10, 2), server_default="0")
 
-    order = relationship("Order")
+    order = relationship("Order", back_populates="items")
     product = relationship("Product")

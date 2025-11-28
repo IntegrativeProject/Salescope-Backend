@@ -14,3 +14,9 @@ class Order(Base):
     updated_at = Column(TIMESTAMP, server_default=text("NOW()"))
 
     user = relationship("User")
+    items = relationship(
+        "OrderItem",
+        back_populates="order",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

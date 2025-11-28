@@ -1,56 +1,91 @@
 # SaleScope Backend
 
-SaleScope is a simple platform that helps local shops understand their sales.  
-This backend is built with **Python** and **FastAPI**. It allows stores to save products, register sales, and get basic reports and demand predictions.
+SaleScope is a comprehensive e-commerce platform that helps businesses manage their products, process orders, and gain insights into their sales performance. This backend is built with **Python** and **FastAPI**, providing a robust and scalable API for the SaleScope platform.
 
 ---
 
-##  Features
+## 🚀 Features
 
-- Register products and daily sales  
-- View simple reports:
-  - Best-selling products  
-  - Days with higher sales  
-  - Weekly average sales  
-- Basic demand prediction using:
-  - Moving averages  
-  - Simple linear regression  
-- Authentication system  
-- REST API ready to connect with a Next.js frontend  
+### User Management
+- User registration and authentication
+- Role-based access control (Admin, Staff, Customer)
+- User profile management
+- Soft delete functionality
+
+### Product Catalog
+- CRUD operations for products
+- Product categorization and inventory management
+- Soft delete support
+- Product search and filtering
+
+### Order Processing
+- Order creation and management
+- Order items handling
+- Order status tracking (pending, paid, shipped, cancelled)
+- Soft delete with restore capability
+
+### Reporting & Analytics
+- Sales reports and analytics
+- Best-selling products
+- Revenue tracking
+- Order history
+
+### Audit Logging
+- Comprehensive activity tracking
+- Change history
+- User action logging
 
 ---
 
-##  Tech Stack
+## 🛠️ Tech Stack
 
-- **Python**  
-- **FastAPI**  
-- **PostgreSQL** or **MongoDB**  
-- **SQLAlchemy**  
-- **Pydantic**  
-- **Uvicorn** (development server)
+- **Framework**: FastAPI
+- **Database**: PostgreSQL
+- **ORM**: SQLAlchemy 2.0
+- **Migrations**: Alembic
+- **API Documentation**: Swagger UI & ReDoc
+- **Authentication**: JWT (JSON Web Tokens)
+- **Validation**: Pydantic
+- **Server**: Uvicorn (ASGI server)
 
 ---
 
 ##  Project Structure
 
-```bash
-    SaleScope-Backend/
-    ├── backend/
-    │   ├── app/
-    │   │   ├── analysis/
-    │   │   ├── config.py
-    │   │   ├── database.py
-    │   │   ├── main.py
-    │   │   ├── models/
-    │   │   ├── routers/
-    │   │   ├── schemas/
-    │   │   └── services/
-    │   ├── run.py
-    │   └── venv/
-    ├── .env
-    ├── .gitignore
-    ├── README.MD
-    └── requirements.txt
+```
+SaleScope-Backend/
+├── backend/
+│   ├── alembic/              # Database migrations
+│   ├── app/
+│   │   ├── models/           # SQLAlchemy models
+│   │   │   ├── __init__.py
+│   │   │   ├── users.py
+│   │   │   ├── products.py
+│   │   │   ├── orders.py
+│   │   │   ├── order_item.py
+│   │   │   └── audit_log.py
+│   │   ├── schemas/          # Pydantic models
+│   │   │   ├── __init__.py
+│   │   │   ├── users.py
+│   │   │   ├── products.py
+│   │   │   └── orders.py
+│   │   ├── services/         # Business logic
+│   │   │   ├── __init__.py
+│   │   │   ├── users.py
+│   │   │   ├── products.py
+│   │   │   └── orders.py
+│   │   ├── routers/          # API routes
+│   │   │   ├── __init__.py
+│   │   │   ├── users.py
+│   │   │   ├── products.py
+│   │   │   └── orders.py
+│   │   ├── database.py       # Database configuration
+│   │   └── main.py           # Application entry point
+│   ├── .env.example          # Example environment variables
+│   ├── requirements.txt      # Project dependencies
+│   └── run.py                # Development server script
+├── .gitignore
+└── README.md
 ```
 
 ---
@@ -60,38 +95,48 @@ This backend is built with **Python** and **FastAPI**. It allows stores to save 
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/IntegrativeProject/Salescope-Backend.git
+cd SaleScope-Backend
 ```
 
-
-### 2. Create a virtual environment
+### 2. Create and activate a virtual environment
 ```bash
+# On Windows:
 python -m venv venv
-```
-
-### 3. Activate the virtual environment
-```bash
 venv\Scripts\activate
+
+# On macOS/Linux:
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-### 4. Install dependencies
+### 3. Install dependencies
 ```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-### 5. Set up environment variables
-Create a `.env` file in the root directory and add the following variables:
-```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/salescope
-SECRET_KEY=your-secret-key
+### 4. Set up environment variables
+Create a `.env` file in the `backend` directory with the following variables:
+```env
+DB_USER=your-db-user
+DB_PASSWORD=your-db-password
+DB_HOST=your-db-host
+DB_PORT=your-db-port
+DB_NAME=your-db-name
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-### 6. Run the application
+### 5. Run database migrations
 ```bash
-python run.py
+alembic upgrade head
 ```
 
-### 7. Access the API
-Open your browser and navigate to `http://localhost:8000` to access the API documentation.
+### 6. Start the development server
+```bash
+uvicorn app.main:app --reload
+```
 
 ---
 
@@ -108,61 +153,73 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## API Endpoints
+## 📚 API Documentation
 
-### Base
-- **GET** `/` → health check. Returns `{ "message": "SaleScope API running" }`.
+### Authentication
+Authorization: Bearer <your-jwt-token>
 
-### Users
-Backed by `backend/app/models/users.py` and exposed in `backend/app/routers/users.py`.
+### Available Endpoints
 
-- **POST** `/users/` → create user
-  - Body:
-  ```json
-  {
-    "full_name": "Alice Doe",
-    "email": "alice@example.com",
-    "role_id": 1,
-    "password_hash": "<hash>",
-    "is_active": true
-  }
-  ```
-  - Responses: `201 Created`, `409 Conflict` (email exists)
+#### Users (`/users`)
+- **POST** `/users/` - Create a new user
+- **GET** `/users/` - List all users (paginated)
+- **GET** `/users/{user_id}` - Get user by ID
+- **PUT** `/users/{user_id}` - Update user
+- **DELETE** `/users/{user_id}` - Soft delete user
+- **POST** `/users/{user_id}/restore` - Restore soft-deleted user
 
-- **GET** `/users/{user_id}` → get by id
-  - Responses: `200 OK`, `404 Not Found`
+#### Products (`/products`)
+- **POST** `/products/` - Create a new product
+- **GET** `/products/` - List all products (paginated)
+- **GET** `/products/{product_id}` - Get product by ID
+- **PUT** `/products/{product_id}` - Update product
+- **DELETE** `/products/{product_id}` - Soft delete product
+- **POST** `/products/{product_id}/restore` - Restore soft-deleted product
 
-- **GET** `/users/?skip=0&limit=50` → list users
-  - Query: `skip` (default 0), `limit` (default 50)
-  - Response: `200 OK` array
-
-- **PUT** `/users/{user_id}` → update user
-  - Body (partial allowed):
-  ```json
-  {
-    "full_name": "Alice Updated",
-    "email": "alice.updated@example.com",
-    "role_id": 2,
-    "password_hash": "<new-hash>",
-    "is_active": false
-  }
-  ```
-  - Responses: `200 OK`, `404 Not Found`
-
-- **DELETE** `/users/{user_id}` → delete user
-  - Responses: `204 No Content`, `404 Not Found`
+#### Orders (`/orders`)
+- **POST** `/orders/` - Create a new order
+- **GET** `/orders/` - List all orders (paginated)
+- **GET** `/orders/{order_id}` - Get order by ID
+- **PUT** `/orders/{order_id}` - Update order status
+- **DELETE** `/orders/{order_id}` - Soft delete order
+- **POST** `/orders/{order_id}/restore` - Restore soft-deleted order
 
 ---
 
-##  Future Work
+## 🔄 Migrations
 
-- Better machine learning models  
-- Role-based authentication  
-- Admin panel  
-- Full integration with the Next.js frontend  
+To create a new migration after making model changes:
+```bash
+alembic revision --autogenerate -m "description of changes"
+alembic upgrade head
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 🚀 Future Work
+
+- Enhanced reporting and analytics
+- Integration with payment gateways
+- Email notifications
+- Inventory management
+- Multi-tenant support
+- API rate limiting
+- Caching layer for better performance
+- More comprehensive test coverage
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📧 Contact
+
+For support or questions, please open an issue on the [GitHub repository](https://github.com/IntegrativeProject/Salescope-Backend).
 
 ---
-
-##  License
-
-This project is open source. You can use it for learning and personal projects.
+*SaleScope Backend - Powering your e-commerce needs*
