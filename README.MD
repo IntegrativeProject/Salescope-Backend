@@ -417,6 +417,55 @@ To rollback the last migration:
 alembic downgrade -1
 ```
 
+## Deploying to Render
+
+We include a `render.yaml` at repo root which defines the web service.
+
+### Steps
+- Push this repo to GitHub.
+- In Render: New → Web Service → Use "Build and deploy from a repository".
+- Render auto-detects `render.yaml`.
+- Set environment variables (below) and deploy.
+
+### Required env vars
+- `DATABASE_URL` (recommended include `?sslmode=require` on Render):
+  - Example: `postgresql://user:pass@host/dbname?sslmode=require`
+- `SECRET_KEY` (random string for JWT)
+- Optional: `ALGORITHM` (default HS256), `ACCESS_TOKEN_EXPIRE_MINUTES` (default 30)
+
+### The render.yaml we ship
+```yml
+services:
+  - type: web
+    name: salescope-backend
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    postDeployCommand: alembic upgrade head
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.14
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+```
+
+Notes:
+- The service runs from `backend/` using `uvicorn app.main:app`.
+- After each deploy, Alembic runs `upgrade head` automatically.
+- Health check hits `/`.
+
 ## 🤝 Contributing
 
 We welcome contributions! Here's how to get started:
