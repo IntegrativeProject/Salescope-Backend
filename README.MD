@@ -1,10 +1,10 @@
 # SaleScope Backend
 
-SaleScope is a comprehensive e-commerce platform that helps businesses manage their products, process orders, and gain insights into their sales performance. This backend is built with **Python** and **FastAPI**, providing a robust and scalable API for the SaleScope platform.
+SaleScope is a comprehensive e-commerce platform that helps businesses manage their products, process orders, and gain insights into their sales performance. This backend is built with **Python** and **FastAPI**, providing a robust and scalable API for the SaleScope platform. The application follows a clean architecture with a focus on maintainability and testability.
 
 ---
 
-## 🚀 Features
+## Features
 
 ### User Management
 - User registration and authentication
@@ -19,10 +19,11 @@ SaleScope is a comprehensive e-commerce platform that helps businesses manage th
 - Product search and filtering
 
 ### Order Processing
-- Order creation and management
-- Order items handling
-- Order status tracking (pending, paid, shipped, cancelled)
+- Complete order lifecycle management
+- Order items with automatic price calculation
+- Order status tracking (pending, processing, completed, cancelled)
 - Soft delete with restore capability
+- Automatic order total calculation
 
 ### Reporting & Analytics
 - Sales reports and analytics
@@ -37,20 +38,22 @@ SaleScope is a comprehensive e-commerce platform that helps businesses manage th
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **Framework**: FastAPI
-- **Database**: PostgreSQL
+- **Framework**: FastAPI (Async-capable)
+- **Database**: PostgreSQL (with soft delete support)
 - **ORM**: SQLAlchemy 2.0
 - **Migrations**: Alembic
 - **API Documentation**: Swagger UI & ReDoc
 - **Authentication**: JWT (JSON Web Tokens)
-- **Validation**: Pydantic
+- **Validation**: Pydantic v2
 - **Server**: Uvicorn (ASGI server)
+- **Architecture**: Service pattern with dependency injection
+- **Testing**: Pytest (with async support)
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
 SaleScope-Backend/
@@ -59,26 +62,31 @@ SaleScope-Backend/
 │   ├── app/
 │   │   ├── models/           # SQLAlchemy models
 │   │   │   ├── __init__.py
-│   │   │   ├── users.py
-│   │   │   ├── products.py
-│   │   │   ├── orders.py
-│   │   │   ├── order_item.py
-│   │   │   └── audit_log.py
+│   │   │   ├── users.py      # User model with authentication
+│   │   │   ├── products.py   # Product catalog
+│   │   │   ├── orders.py     # Order management
+│   │   │   └── order_item.py # Order line items
+│   │   │   └── audit_log.py  # Audit trail
 │   │   ├── schemas/          # Pydantic models
 │   │   │   ├── __init__.py
 │   │   │   ├── users.py
 │   │   │   ├── products.py
-│   │   │   └── orders.py
+│   │   │   ├── orders.py
+│   │   │   └── order_item.py  # Order item payloads/responses
 │   │   ├── services/         # Business logic
 │   │   │   ├── __init__.py
-│   │   │   ├── users.py
-│   │   │   ├── products.py
-│   │   │   └── orders.py
+│   │   │   ├── order_service.py   # Order service class
+│   │   │   ├── order_item_service.py # Order item service class
+│   │   │   ├── users.py      # Legacy service functions (wrappers)
+│   │   │   ├── products.py   # Legacy service functions (wrappers)
+│   │   │   ├── orders.py     # Legacy service functions (wrappers)
+│   │   │   └── order_items.py # Legacy service functions (wrappers)
 │   │   ├── routers/          # API routes
 │   │   │   ├── __init__.py
-│   │   │   ├── users.py
-│   │   │   ├── products.py
-│   │   │   └── orders.py
+│   │   │   ├── users.py      # User endpoints
+│   │   │   ├── products.py   # Product endpoints
+│   │   │   ├── orders.py     # Order endpoints
+│   │   └── order_items.py # Order item endpoints
 │   │   ├── database.py       # Database configuration
 │   │   └── main.py           # Application entry point
 │   ├── .env.example          # Example environment variables
@@ -90,7 +98,7 @@ SaleScope-Backend/
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ### 1. Clone the repository
 ```bash
@@ -140,28 +148,46 @@ uvicorn app.main:app --reload
 
 ---
 
-##  License
+## Development
+
+### Code Style
+- Follow PEP 8 guidelines
+- Use type hints throughout the codebase
+- Document public APIs with docstrings
+- Keep functions small and focused
+- Use dependency injection for better testability
+
+### Testing
+Run the test suite with:
+```bash
+pytest
+```
+
+### Code Quality
+We use pre-commit hooks to ensure code quality. Install with:
+```bash
+pre-commit install
+```
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-##  License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-
----
-
-## 📚 API Documentation
+## API Documentation
 
 ### Authentication
 Authorization: Bearer <your-jwt-token>
 
 ### Available Endpoints
 
+#### Auth (`/auth`)
+- **POST** `/auth/register` - Register a new user (hashes password, returns JWT)
+- **POST** `/auth/login` - Login with email/password (returns JWT)
+
 #### Users (`/users`)
-- **POST** `/users/` - Create a new user
+- **POST** `/users/` - Create a new user (admin/internal, expects pre-hashed `password_hash`)
 - **GET** `/users/` - List all users (paginated)
 - **GET** `/users/{user_id}` - Get user by ID
 - **PUT** `/users/{user_id}` - Update user
@@ -184,23 +210,229 @@ Authorization: Bearer <your-jwt-token>
 - **DELETE** `/orders/{order_id}` - Soft delete order
 - **POST** `/orders/{order_id}/restore` - Restore soft-deleted order
 
+#### Order Items (`/orders/{order_id}/items`)
+- **GET** `/orders/{order_id}/items` - List items for an order
+- **GET** `/orders/{order_id}/items/{item_id}` - Get a specific order item
+- **POST** `/orders/{order_id}/items` - Add a new item to an order
+- **PUT** `/orders/{order_id}/items/{item_id}` - Update an order item's quantity
+- **DELETE** `/orders/{order_id}/items/{item_id}` - Delete an order item
+
 ---
 
-## 🔄 Migrations
+## API Examples (cURL)
 
-To create a new migration after making model changes:
+Base URL variable:
+```bash
+BASE_URL=http://127.0.0.1:8000
+```
+
+If you use tokens, add: `-H "Authorization: Bearer <token>"`
+
+### Auth
+
+- Register (recommended for creating users)
+```bash
+curl -X POST "$BASE_URL/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "full_name": "Alice",
+    "email": "alice@example.com",
+    "password": "pass123",
+    "role_name": "customer"
+  }'
+```
+
+- Login
+```bash
+curl -X POST "$BASE_URL/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "alice@example.com",
+    "password": "pass123"
+  }'
+```
+
+### Users
+Note: Use `/auth/register` to create users with a password. The `/users/` create endpoint is admin/internal and expects a pre-hashed `password_hash`.
+
+- List users
+```bash
+curl "$BASE_URL/users/"
+```
+
+- Get user
+```bash
+curl "$BASE_URL/users/1"
+```
+
+- Update user
+```bash
+curl -X PUT "$BASE_URL/users/1" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Alice Smith" }'
+```
+
+- Soft delete user
+```bash
+curl -X DELETE "$BASE_URL/users/1"
+```
+
+- Restore user
+```bash
+curl -X PUT "$BASE_URL/users/1/restore"
+```
+
+### Products
+
+- Create product
+```bash
+curl -X POST "$BASE_URL/products/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Mouse",
+    "description": "USB mouse",
+    "price": 25.5,
+    "stock": 100
+  }'
+```
+
+- List products
+```bash
+curl "$BASE_URL/products/"
+```
+
+- Get product
+```bash
+curl "$BASE_URL/products/1"
+```
+
+- Update product
+```bash
+curl -X PUT "$BASE_URL/products/1" \
+  -H "Content-Type: application/json" \
+  -d '{ "price": 30.0, "stock": 90 }'
+```
+
+- Soft delete product
+```bash
+curl -X DELETE "$BASE_URL/products/1"
+```
+
+- Restore product
+```bash
+curl -X PUT "$BASE_URL/products/1/restore"
+```
+
+### Orders
+
+- Create order (with initial items)
+```bash
+curl -X POST "$BASE_URL/orders/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": 1,
+    "items": [
+      { "product_id": 1, "quantity": 2 }
+    ]
+  }'
+```
+
+- List orders
+```bash
+curl "$BASE_URL/orders/"
+```
+
+- Get order
+```bash
+curl "$BASE_URL/orders/1"
+```
+
+- Update order status
+```bash
+curl -X PUT "$BASE_URL/orders/1" \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "completed" }'
+```
+
+- Soft delete order
+```bash
+curl -X DELETE "$BASE_URL/orders/1"
+```
+
+- Restore order
+```bash
+curl -X PUT "$BASE_URL/orders/1/restore"
+```
+
+### Order Items
+
+- List items in an order
+```bash
+curl "$BASE_URL/orders/1/items"
+```
+
+- Add item to an order
+```bash
+curl -X POST "$BASE_URL/orders/1/items" \
+  -H "Content-Type: application/json" \
+  -d '{ "product_id": 1, "quantity": 3 }'
+```
+
+- Get a specific item
+```bash
+curl "$BASE_URL/orders/1/items/1"
+```
+
+- Update item quantity
+```bash
+curl -X PUT "$BASE_URL/orders/1/items/1" \
+  -H "Content-Type: application/json" \
+  -d '{ "quantity": 5 }'
+```
+
+- Delete item
+```bash
+curl -X DELETE "$BASE_URL/orders/1/items/1"
+```
+
+---
+
+## Database Migrations
+
+### Creating Migrations
+After making model changes, create a new migration:
 ```bash
 alembic revision --autogenerate -m "description of changes"
+```
+
+### Applying Migrations
+To apply pending migrations:
+```bash
 alembic upgrade head
+```
+
+### Rollback Migrations
+To rollback the last migration:
+```bash
+alembic downgrade -1
 ```
 
 ## 🤝 Contributing
 
+We welcome contributions! Here's how to get started:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. Follow the code style and add tests for your changes
+4. Ensure all tests pass
+5. Submit a pull request with a clear description of your changes
+
+### Development Workflow
+- Create an issue to discuss your proposed changes
+- Write tests for new features
+- Update documentation as needed
+- Keep commits small and focused
+- Write clear commit messages
 
 ## 🚀 Future Work
 
