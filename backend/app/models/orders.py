@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Numeric, String, TIMESTAMP, text
+from sqlalchemy import Column, Integer, ForeignKey, Numeric, String, TIMESTAMP, Boolean, text
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -12,8 +12,11 @@ class Order(Base):
 
     created_at = Column(TIMESTAMP, server_default=text("NOW()"))
     updated_at = Column(TIMESTAMP, server_default=text("NOW()"))
+    is_active = Column(Boolean, server_default=text("TRUE"), nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    deleted_by = Column(Integer, ForeignKey("users.user_id"), nullable=True)
 
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[user_id])
     items = relationship(
         "OrderItem",
         back_populates="order",

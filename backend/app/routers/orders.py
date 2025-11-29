@@ -16,6 +16,7 @@ from ..services.orders import (
     list_orders,
     update_order,
     delete_order,
+    restore_order,
 )
 
 
@@ -49,6 +50,12 @@ class OrdersAPI:
             raise HTTPException(status_code=404, detail="Order not found")
         return {"message": "Order deleted successfully"}
 
+    def restore(self, db: Session, order_id: int):
+        order = restore_order(db, order_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return {"message": "Order restored successfully", "data": order}
+
 
 orders_api = OrdersAPI()
 
@@ -76,3 +83,8 @@ def update_order_endpoint(order_id: int, payload: OrderUpdate, db: Session = Dep
 @router.delete("/{order_id}", response_model=MessageResponse)
 def delete_order_endpoint(order_id: int, db: Session = Depends(get_db)):
     return orders_api.delete(db, order_id)
+
+
+@router.put("/{order_id}/restore", response_model=OrderResponse)
+def restore_order_endpoint(order_id: int, db: Session = Depends(get_db)):
+    return orders_api.restore(db, order_id)
