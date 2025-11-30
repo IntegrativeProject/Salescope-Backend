@@ -1,9 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import os
+import socket
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Force IPv4 to avoid environments where IPv6 egress is unavailable
+socket.setdefaultfamily(socket.AF_INET)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
@@ -16,7 +20,12 @@ if not DATABASE_URL:
 Base = declarative_base()
 
 # --- Engine SQLAlchemy ---
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"sslmode": "require", "application_name": "render-app"},
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 
 # --- Sessions ---
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
