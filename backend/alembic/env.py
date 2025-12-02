@@ -3,12 +3,12 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from dotenv import load_dotenv
 import os
-
-from app.database import Base  
-import app.models 
 from urllib.parse import quote
 
-# Load .env for local development (safe if file doesn't exist)
+from app.database import Base  
+import app.models  
+
+# Load .env only in local (safe even if .env doesn't exist)
 load_dotenv()
 
 # Alembic Config object
@@ -18,32 +18,31 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Build SQLAlchemy URL from env if provided
+# Load database URL
 db_url = os.getenv("DATABASE_URL")
-if not db_url:
-    user = os.getenv("DB_USER") or "postgres"
-    pwd = os.getenv("DB_PASSWORD") or "postgres"
-    host = os.getenv("DB_HOST") or "localhost"
-    port = os.getenv("DB_PORT") or "5432"
-    name = os.getenv("DB_NAME") or "postgres"
-    db_url = f"postgresql+psycopg2://{quote(user)}:{quote(pwd)}@{host}:{port}/{name}"
 
-# Override sqlalchemy.url for both offline and online modes
-# Escape percent signs for ConfigParser interpolation safety
+# Fallback ONLY if DATABASE_URL is missing
+if not db_url:
+    user = quote(os.getenv("DB_USER", "postgres"))
+    pwd = quote(os.getenv("DB_PASSWORD", "postgres"))
+    host = os.getenv("DB_HOST", "localhost")
+    port = os.getenv("DB_PORT", "5432")
+    name = os.getenv("DB_NAME", "postgres")
+
+    db_url = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{name}"
+
+# Escape % for ConfigParser
 safe_db_url = db_url.replace("%", "%%")
+
+# Inject URL into Alembic config
 config.set_main_option("sqlalchemy.url", safe_db_url)
 
-# Import metadata for autogenerate (optional)
-try:
-    target_metadata = Base.metadata
-    if target_metadata is None:
-        print("Alembic: Base found but has no metadata; proceeding without autogenerate metadata.")
-except Exception as _e:
-    print("Alembic: Could not import Base from app.database; proceeding without autogenerate metadata.")
-    target_metadata = None
+# Metadata for autogenerate
+target_metadata = Base.metadata
 
 
 def run_migrations_offline():
+    """Run migrations in 'offline' mode."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -53,11 +52,13 @@ def run_migrations_offline():
         compare_type=True,
         compare_server_default=True,
     )
+
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online():
+    """Run migrations in 'online' mode."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
@@ -71,6 +72,7 @@ def run_migrations_online():
             compare_type=True,
             compare_server_default=True,
         )
+
         with context.begin_transaction():
             context.run_migrations()
 
