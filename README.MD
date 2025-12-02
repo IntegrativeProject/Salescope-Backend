@@ -223,7 +223,7 @@ Authorization: Bearer <your-jwt-token>
 
 Base URL variable:
 ```bash
-BASE_URL=http://127.0.0.1:8000
+BASE_URL=https://integrative-salescope.onrender.com
 ```
 
 If you use tokens, add: `-H "Authorization: Bearer <token>"`
