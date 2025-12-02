@@ -1,13 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import os
-import socket
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# Force IPv4 to avoid environments where IPv6 egress is unavailable
-socket.setdefaultfamily(socket.AF_INET)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
