@@ -1,8 +1,8 @@
-"""Migrate aiming to keep the database on render with the current version of the db in localhost
+"""Added a new migration to full the table on neon where I'm using to deploy da DB
 
-Revision ID: 3b6109f7371e
+Revision ID: 36610ab32754
 Revises: 
-Create Date: 2025-11-29 21:36:11.219580
+Create Date: 2025-12-01 23:22:10.532886
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3b6109f7371e'
+revision: str = '36610ab32754'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
