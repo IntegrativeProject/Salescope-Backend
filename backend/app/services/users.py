@@ -7,7 +7,11 @@ from ..schemas.users import UserCreate, UserUpdate
 
 
 def _get_role_id_by_name(db: Session, role_name: str) -> Optional[int]:
-    role = db.query(Role).filter(Role.role_name == role_name).first()
+    role = (
+        db.query(Role)
+        .filter(func.lower(Role.role_name) == func.lower(role_name))
+        .first()
+    )
     return role.role_id if role else None
 
 
