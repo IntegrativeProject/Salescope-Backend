@@ -8,7 +8,7 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     price: float
     stock: int
-
+    category: Optional[str] = None 
 
 class ProductCreate(ProductBase):
     pass
