@@ -27,6 +27,7 @@ class ProductRead(BaseModel):
     description: Optional[str] = None
     price: float
     stock: int
+    category: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
