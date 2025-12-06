@@ -11,6 +11,7 @@ def create_product(db: Session, data: ProductCreate) -> Product:
         name=data.name,
         description=data.description,
         price=data.price,
+        category=data.category,
         stock=data.stock,
         is_active=True
     )

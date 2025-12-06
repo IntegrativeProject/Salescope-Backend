@@ -9,6 +9,7 @@ class Product(Base):
     description = Column(Text)
     price = Column(Numeric(10, 2), nullable=False)
     stock = Column(Integer, nullable=False)
+    category = Column(String(100), nullable=True, comment='Category of the product')
     is_active = Column(Boolean, nullable=False, server_default="true")
 
     created_at = Column(TIMESTAMP, server_default=text("NOW()"))
