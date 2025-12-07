@@ -23,7 +23,16 @@ def create_product(db: Session, data: ProductCreate) -> Product:
 
 def get_product(db: Session, product_id: int) -> Optional[Product]:
     return (
-        db.query(Product)
+        db.query(
+            Product.product_id,
+            Product.name,
+            Product.description,
+            Product.price,
+            Product.stock,
+            Product.category,
+            Product.created_at,
+            Product.updated_at
+        )
         .filter(Product.product_id == product_id, Product.is_active == True)
         .first()
     )
@@ -31,7 +40,16 @@ def get_product(db: Session, product_id: int) -> Optional[Product]:
 
 def list_products(db: Session, skip: int = 0, limit: int = 50) -> List[Product]:
     return (
-        db.query(Product)
+        db.query(
+            Product.product_id,
+            Product.name,
+            Product.description,
+            Product.price,
+            Product.stock,
+            Product.category,
+            Product.created_at,
+            Product.updated_at
+        )
         .filter(Product.is_active == True)
         .offset(skip)
         .limit(limit)
