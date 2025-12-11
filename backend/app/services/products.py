@@ -78,12 +78,17 @@ def update_product(db: Session, product_id: int, data: ProductUpdate) -> Optiona
 
 
 def delete_product(db: Session, product_id: int) -> bool:
-    product = get_product(db, product_id)
+    # Get the product as an ORM object, not a Row
+    product = db.query(Product).filter(
+        Product.product_id == product_id,
+        Product.is_active == True
+    ).first()
+    
     if not product:
         return False
+    
     product.is_active = False
     product.deleted_at = func.now()
-    # product.deleted_by can be set from auth context later
     db.add(product)
     db.commit()
     db.refresh(product)
