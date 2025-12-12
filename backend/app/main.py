@@ -10,7 +10,7 @@ from .routers import (
     export_users_csv,
     export_products_csv,
     export_orders_csv,
-    export_orders_items_cs,
+    export_orders_items_csv,
     export_orders_detailed_csv,
     export_audit_logs_csv,
 )
