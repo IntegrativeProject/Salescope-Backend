@@ -249,6 +249,28 @@ These endpoints provide aggregated sales data for dashboards and simple demand a
 
 All analytics are computed from `orders` and `order_items` and, by default, consider orders in statuses like `paid`, `shipped`, `pending`, and `cancelled`.
 
+#### Export / CSV (`/export`)
+
+These endpoints return CSV files that you can download for reporting and analytics in tools like Excel or Power BI:
+
+- **GET** `/export/users`  
+  Download all users as `users.csv`.
+
+- **GET** `/export/products`  
+  Download all products as `products.csv`.
+
+- **GET** `/export/orders`  
+  Download all orders as `orders.csv`.
+
+- **GET** `/export/order-items`  
+  Download all order items as `order_items.csv`.
+
+- **GET** `/export/orders-detailed`  
+  Download an orders + order_items + products join as `orders_detailed.csv`.
+
+- **GET** `/export/audit-logs`  
+  Download the audit log table as `audit_logs.csv`.
+
 ---
 
 ## API Examples (cURL)
