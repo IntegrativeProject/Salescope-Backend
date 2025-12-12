@@ -6,4 +6,5 @@ __all__ = [
     "orders",
     "order_items",
     "auth",
+    "analythics",
 ]
