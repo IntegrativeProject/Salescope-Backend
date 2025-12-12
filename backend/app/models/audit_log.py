@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, Text, ForeignKey, text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, TIMESTAMP, Text, text
 
 from ..database import Base
 
@@ -11,11 +10,8 @@ class AuditLog(Base):
     action_type = Column(String(50), nullable=False)
     table_name = Column(String(50), nullable=False)
     record_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
-    actor_username = Column(Text, nullable=False)
-    full_name = Column(String(150), nullable=False)
+    actor_id = Column(Integer, nullable=True)
+    actor_name = Column(String(150), nullable=True)
 
     action_timestamp = Column(TIMESTAMP, nullable=False, server_default=text("NOW()"))
-    details = Column(Text)
-
-    user = relationship("User")
+    old_data = Column(Text)
