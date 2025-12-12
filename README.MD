@@ -58,40 +58,48 @@ SaleScope is a comprehensive e-commerce platform that helps businesses manage th
 ```
 SaleScope-Backend/
 ├── backend/
-│   ├── alembic/              # Database migrations
+│   ├── alembic/                  # Database migrations
 │   ├── app/
-│   │   ├── models/           # SQLAlchemy models
+│   │   ├── models/               # SQLAlchemy models
 │   │   │   ├── __init__.py
-│   │   │   ├── users.py      # User model with authentication
-│   │   │   ├── products.py   # Product catalog
-│   │   │   ├── orders.py     # Order management
-│   │   │   └── order_item.py # Order line items
-│   │   │   └── audit_log.py  # Audit trail
-│   │   ├── schemas/          # Pydantic models
+│   │   │   ├── users.py          # User model with authentication
+│   │   │   ├── products.py       # Product catalog
+│   │   │   ├── orders.py         # Order management
+│   │   │   ├── order_item.py     # Order line items
+│   │   │   ├── audit_log.py      # Centralized audit log
+│   │   │   └── roles.py          # User roles (admin, seller, customer)
+│   │   ├── schemas/              # Pydantic models
 │   │   │   ├── __init__.py
 │   │   │   ├── users.py
 │   │   │   ├── products.py
 │   │   │   ├── orders.py
-│   │   │   └── order_item.py  # Order item payloads/responses
-│   │   ├── services/         # Business logic
+│   │   │   ├── order_item.py
+│   │   │   ├── auth.py
+│   │   │   └── analytics.py     # Analytics response schemas
+│   │   ├── services/             # Business logic
 │   │   │   ├── __init__.py
-│   │   │   ├── order_service.py   # Order service class
+│   │   │   ├── order_service.py      # Order service class
 │   │   │   ├── order_item_service.py # Order item service class
-│   │   │   ├── users.py      # Legacy service functions (wrappers)
-│   │   │   ├── products.py   # Legacy service functions (wrappers)
-│   │   │   ├── orders.py     # Legacy service functions (wrappers)
-│   │   │   └── order_items.py # Legacy service functions (wrappers)
-│   │   ├── routers/          # API routes
+│   │   │   ├── users.py              # User-related services
+│   │   │   ├── products.py           # Product-related services
+│   │   │   ├── orders.py             # Legacy order functions (wrappers)
+│   │   │   ├── order_items.py        # Legacy order item functions (wrappers)
+│   │   │   └── analytics.py          # Analytics service (aggregated sales)
+│   │   ├── routers/              # API routes
 │   │   │   ├── __init__.py
-│   │   │   ├── users.py      # User endpoints
-│   │   │   ├── products.py   # Product endpoints
-│   │   │   ├── orders.py     # Order endpoints
-│   │   └── order_items.py # Order item endpoints
-│   │   ├── database.py       # Database configuration
-│   │   └── main.py           # Application entry point
-│   ├── .env.example          # Example environment variables
-│   ├── requirements.txt      # Project dependencies
-│   └── run.py                # Development server script
+│   │   │   ├── users.py          # User endpoints
+│   │   │   ├── products.py       # Product endpoints
+│   │   │   ├── orders.py         # Order endpoints
+│   │   │   ├── order_items.py    # Order item endpoints
+│   │   │   ├── auth.py           # Authentication endpoints (register/login)
+│   │   │   └── analytics.py     # Analytics endpoints (/analytics/...)
+│   │   ├── utils/
+│   │   │   └── auth.py           # Password hashing and JWT helpers
+│   │   ├── database.py           # Database configuration and session
+│   │   └── main.py               # FastAPI application entry point
+│   ├── .env.example              # Example environment variables
+│   ├── requirements.txt          # Project dependencies
+│   └── run.py                    # Development server script (local)
 ├── .gitignore
 └── README.md
 ```
@@ -216,6 +224,52 @@ Authorization: Bearer <your-jwt-token>
 - **POST** `/orders/{order_id}/items` - Add a new item to an order
 - **PUT** `/orders/{order_id}/items/{item_id}` - Update an order item's quantity
 - **DELETE** `/orders/{order_id}/items/{item_id}` - Delete an order item
+
+#### Analytics (`/analytics`)
+
+These endpoints provide aggregated sales data for dashboards and simple demand analysis:
+
+- **GET** `/analytics/best-product`  
+  Returns the single best-selling product by total units sold.
+
+- **GET** `/analytics/top-products?limit=5`  
+  Returns the top N products by units sold (default 5).
+
+- **GET** `/analytics/daily-sales`  
+  Returns total units sold per day across all products.
+
+- **GET** `/analytics/daily-sales-by-product`  
+  Returns units sold per product per day (time series per product).
+
+- **GET** `/analytics/weekly-sales`  
+  Returns weekly aggregates with total units and revenue per week.
+
+- **GET** `/analytics/weekly-sales/average`  
+  Returns average units and revenue per week across the available history.
+
+All analytics are computed from `orders` and `order_items` and, by default, consider orders in statuses like `paid`, `shipped`, `pending`, and `cancelled`.
+
+#### Export / CSV (`/export`)
+
+These endpoints return CSV files that you can download for reporting and analytics in tools like Excel or Power BI:
+
+- **GET** `/export/users`  
+  Download all users as `users.csv`.
+
+- **GET** `/export/products`  
+  Download all products as `products.csv`.
+
+- **GET** `/export/orders`  
+  Download all orders as `orders.csv`.
+
+- **GET** `/export/order-items`  
+  Download all order items as `order_items.csv`.
+
+- **GET** `/export/orders-detailed`  
+  Download an orders + order_items + products join as `orders_detailed.csv`.
+
+- **GET** `/export/audit-logs`  
+  Download the audit log table as `audit_logs.csv`.
 
 ---
 
@@ -483,7 +537,7 @@ We welcome contributions! Here's how to get started:
 - Keep commits small and focused
 - Write clear commit messages
 
-## 🚀 Future Work
+## Future Work
 
 - Enhanced reporting and analytics
 - Integration with payment gateways
@@ -504,3 +558,12 @@ For support or questions, please open an issue on the [GitHub repository](https:
 
 ---
 *SaleScope Backend - Powering your e-commerce needs*
+
+## Collaborators
+
+This project was made by:
+1. Cristian Celis
+2. Daniel Barrios
+3. Oscar Escorcia
+4. Nayib Obeso
+5. Keyner Lara
