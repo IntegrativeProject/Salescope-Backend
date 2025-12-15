@@ -6,7 +6,7 @@ from ..models.order_item import OrderItem
 from ..models.products import Product
 
 # Only consider real sales for analytics
-PAID_STATUSES = ("paid", "shipped", "pending", "cancelled")
+PAID_STATUSES = ("paid", "shipped", "pending", "cancelled", "refunded")
 
 class AnalyticsGraphics:
     def __init__(self, db: Session) -> None:
@@ -68,10 +68,13 @@ class AnalyticsGraphics:
         q = (
             self.db.query(
                 week.label("week"),
-                func.sum(OrderItem.quantity).label("units_sold"),
-                func.sum(OrderItem.total_price).label("revenue"),
+                func.coalesce(func.sum(OrderItem.quantity), 0).label("units_sold"),
+                func.coalesce(
+                    func.sum(OrderItem.total_price),
+                    func.sum(Order.total_amount),
+                ).label("revenue"),
             )
-            .join(OrderItem, OrderItem.order_id == Order.order_id)
+            .outerjoin(OrderItem, OrderItem.order_id == Order.order_id)
             .filter(Order.status.in_(PAID_STATUSES))
             .group_by(week)
             .order_by(week.desc())
